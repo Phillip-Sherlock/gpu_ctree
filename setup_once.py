@@ -1,4 +1,77 @@
 """
+One-time setup script for GPU-CTree environment.
+Run this once to configure the GPU environment permanently.
+"""
+import os
+import sys
+import subprocess
+from pathlib import Path
+import warnings
+
+def get_cuda_version():
+    """Get system CUDA version."""
+    try:
+        nvidia_smi = subprocess.check_output(['nvidia-smi']).decode('utf-8')
+        cuda_line = [line for line in nvidia_smi.split('\n') if 'CUDA Version' in line]
+        if cuda_line:
+            return cuda_line[0].split('CUDA Version: ')[1].strip()
+        return None
+    except Exception:
+        return None
+
+def fix_environment():
+    """Fix the GPU environment permanently."""
+    print("Starting GPU-CTree environment setup...")
+    
+    # Get Python executable path
+    python_exe = sys.executable
+    pip_exe = f"{python_exe} -m pip"
+    
+    # Detect CUDA version
+    cuda_version = get_cuda_version()
+    print(f"Detected CUDA version: {cuda_version or 'None'}")
+    
+    # Remove existing CuPy installations
+    print("\nRemoving existing CuPy installations...")
+    subprocess.call(f"{pip_exe} uninstall -y cupy-cuda11x cupy-cuda116 cupy", shell=True)
+    
+    # Install appropriate CuPy
+    print("\nInstalling appropriate CuPy version...")
+    if cuda_version:
+        major = int(cuda_version.split('.')[0])
+        if major == 11:
+            subprocess.call(f"{pip_exe} install cupy-cuda11x", shell=True)
+        elif major == 12:
+            subprocess.call(f"{pip_exe} install cupy-cuda12x", shell=True)
+        else:
+            print(f"Unknown CUDA version {cuda_version}. Installing default CuPy...")
+            subprocess.call(f"{pip_exe} install cupy", shell=True)
+    else:
+        print("CUDA not detected. Installing default CuPy...")
+        subprocess.call(f"{pip_exe} install cupy", shell=True)
+    
+    # Install other required GPU packages
+    print("\nInstalling other required packages...")
+    subprocess.call(f"{pip_exe} install numba", shell=True)
+    
+    # Fix for the missing GPU function issues
+    print("\nUpdating kernels.py to fix GPU function issues...")
+    
+    # Define the path to kernels.py
+    gpu_ctree_dir = Path(__file__).parent
+    kernels_path = gpu_ctree_dir / "gpu_ctree" / "kernels.py"
+    
+    if kernels_path.exists():
+        # Create a backup
+        backup_path = kernels_path.with_suffix(".py.bak")
+        if not backup_path.exists():  # Don't overwrite existing backups
+            print(f"Creating backup of kernels.py at {backup_path}")
+            with open(kernels_path, 'r') as f_in, open(backup_path, 'w') as f_out:
+                f_out.write(f_in.read())
+        
+        # Write the updated kernels.py content
+        with open(kernels_path, 'w') as f:
+            f.write('''"""
 GPU kernels for accelerated computation in the gpu_ctree package.
 """
 
@@ -14,6 +87,7 @@ try:
     CUPY_AVAILABLE = True
 except ImportError:
     CUPY_AVAILABLE = False
+    cp = None
 
 # Import numba if available for JIT compilation
 try:
@@ -236,7 +310,8 @@ def gpu_compute_node_statistics(X, y, node_indices):
         Statistics for each node
     """
     if not CUPY_AVAILABLE:
-        raise ImportError("CuPy is required for GPU acceleration but not installed")
+        warnings.warn("CuPy is required for GPU acceleration but not installed. Falling back to CPU.")
+        return None
     
     try:
         # Convert inputs to GPU arrays
@@ -296,7 +371,8 @@ def gpu_compute_split_criterion(X, y, node_indices, feature_idx, split_points):
         Criterion value for each split point
     """
     if not CUPY_AVAILABLE:
-        raise ImportError("CuPy is required for GPU acceleration but not installed")
+        warnings.warn("CuPy is required for GPU acceleration but not installed. Falling back to CPU.")
+        return None
     
     try:
         # Convert inputs to GPU arrays
@@ -352,7 +428,8 @@ def gpu_permutation_test(X, y, n_permutations=1000, random_state=None):
         Test statistics for each feature
     """
     if not CUPY_AVAILABLE:
-        raise ImportError("CuPy is required for GPU acceleration but not installed")
+        warnings.warn("CuPy is required for GPU acceleration but not installed. Falling back to CPU.")
+        return None, None
     
     try:
         # Set random seed
@@ -421,3 +498,95 @@ def gpu_permutation_test(X, y, n_permutations=1000, random_state=None):
     except Exception as e:
         warnings.warn(f"GPU computation failed: {str(e)}. Falling back to CPU.")
         return None, None
+''')
+    else:
+        print(f"Warning: kernels.py not found at expected location: {kernels_path}")
+
+    # Update module __init__.py
+    module_init_path = gpu_ctree_dir / "gpu_ctree" / "__init__.py"
+    if module_init_path.exists():
+        # Create a backup
+        backup_path = module_init_path.with_suffix(".py.bak")
+        if not backup_path.exists():
+            print(f"Creating backup of __init__.py at {backup_path}")
+            with open(module_init_path, 'r') as f_in, open(backup_path, 'w') as f_out:
+                f_out.write(f_in.read())
+        
+        # Write the updated __init__.py content
+        with open(module_init_path, 'w') as f:
+            f.write('''"""
+CUDA utilities for GPU acceleration in the gpu_ctree package.
+"""
+
+# Check if required dependencies are available
+try:
+    import cupy
+    CUPY_AVAILABLE = True
+except ImportError:
+    CUPY_AVAILABLE = False
+
+# Import functions if dependencies are available
+if CUPY_AVAILABLE:
+    try:
+        from .kernels import (
+            gpu_permutation_test,
+            gpu_compute_split_criterion,
+            gpu_compute_node_statistics
+        )
+    except (ImportError, AttributeError) as e:
+        import warnings
+        warnings.warn(f"Could not import GPU functions: {str(e)}")
+        # Define dummy functions that return None when GPU acceleration fails
+        def gpu_permutation_test(*args, **kwargs):
+            warnings.warn("GPU acceleration unavailable. Falling back to CPU.")
+            return None, None
+            
+        def gpu_compute_split_criterion(*args, **kwargs):
+            warnings.warn("GPU acceleration unavailable. Falling back to CPU.")
+            return None
+            
+        def gpu_compute_node_statistics(*args, **kwargs):
+            warnings.warn("GPU acceleration unavailable. Falling back to CPU.")
+            return None
+
+    from .utils import (
+        to_gpu,
+        to_cpu,
+        clear_gpu_memory,
+        get_gpu_memory_info
+    )
+    
+    __all__ = [
+        'gpu_permutation_test',
+        'gpu_compute_split_criterion',
+        'gpu_compute_node_statistics',
+        'to_gpu',
+        'to_cpu',
+        'clear_gpu_memory',
+        'get_gpu_memory_info',
+        'CUPY_AVAILABLE'
+    ]
+else:
+    # Define the flag so other modules can check
+    __all__ = ['CUPY_AVAILABLE']
+    
+    import warnings
+    warnings.warn("CuPy not available. GPU acceleration will be disabled.")
+''')
+    else:
+        print(f"Warning: __init__.py not found at expected location: {module_init_path}")
+    
+    # Create .gpuctreerc file in the home directory
+    home = Path.home()
+    rc_file = home / ".gpuctreerc"
+    
+    with open(rc_file, "w") as f:
+        f.write(f"CUDA_VERSION={cuda_version or 'unknown'}\n")
+        f.write(f"SETUP_DATE={subprocess.check_output(['date']).decode('utf-8').strip()}\n")
+    
+    print(f"\nConfiguration saved to {rc_file}")
+    print("\nGPU-CTree environment setup complete!")
+    print("You can now run your GPU-CTree examples without additional setup.")
+
+if __name__ == "__main__":
+    fix_environment()

@@ -22,9 +22,6 @@ module load cuda
 nvidia-smi
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
-# First, fix the GPU environment
-bash fix_gpu_environment.sh
-
 # Set CUDA visible devices to use all 4 GPUs
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 
