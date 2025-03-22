@@ -1,5 +1,5 @@
 """
-CUDA utilities for GPU acceleration in the gpu_ctree package.
+GPU-CTree module for GPU-accelerated conditional inference trees.
 
 This module provides GPU-accelerated implementations of key statistical
 operations used in conditional inference trees.
@@ -12,20 +12,13 @@ try:
 except ImportError:
     CUPY_AVAILABLE = False
 
-# Import functions if dependencies are available
+# Import GPU functions if dependencies are available
 if CUPY_AVAILABLE:
     try:
         from .kernels import (
             gpu_permutation_test,
             gpu_compute_split_criterion, 
             gpu_compute_node_statistics
-        )
-        from .utils import (
-            to_gpu,
-            to_cpu,
-            clear_gpu_memory,
-            get_gpu_memory_info,
-            check_cuda_availability
         )
     except ImportError as e:
         import warnings
@@ -50,18 +43,12 @@ if CUPY_AVAILABLE:
         'gpu_permutation_test',
         'gpu_compute_split_criterion',
         'gpu_compute_node_statistics',
-        'to_gpu',
-        'to_cpu',
-        'clear_gpu_memory',
-        'get_gpu_memory_info',
-        'check_cuda_availability',
         'CUPY_AVAILABLE'
     ]
 else:
-    # Export the check function regardless of CuPy availability
-    from .utils import check_cuda_availability
-    
-    __all__ = ['check_cuda_availability', 'CUPY_AVAILABLE']
-    
     import warnings
     warnings.warn("CuPy not available. GPU acceleration will be disabled.")
+    __all__ = ['CUPY_AVAILABLE']
+    
+# DO NOT import other package modules here to avoid circular imports
+# Core components are imported at the package level in /__init__.py

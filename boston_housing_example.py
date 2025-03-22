@@ -10,9 +10,11 @@ import time
 import os
 import sys
 
-# Import gpu_ctree
-from gpu_ctree import GPUCTree, gpu_ctree_control
+# Import utility functions first
 from gpu_ctree.utils import check_cuda_availability
+
+# Then import the model
+from gpu_ctree import GPUCTree, gpu_ctree_control
 
 # Print environment information
 print("Environment Information:")
@@ -27,7 +29,7 @@ try:
     minor = (cuda_version % 1000) // 10
     print(f"- CUDA Version: {major}.{minor}")
     
-    # Test importing the GPU functions from kernels.py
+    # Test importing the GPU functions
     try:
         from gpu_ctree.kernels import gpu_permutation_test, gpu_compute_split_criterion, gpu_compute_node_statistics
         print("- GPU functions successfully imported")

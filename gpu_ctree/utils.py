@@ -1,12 +1,13 @@
 """
-Utility functions for GPU-CTree package.
+Utility functions for the GPU-CTree package.
+
+This module provides utility functions for GPU acceleration,
+data preprocessing, and other helper functions.
 """
 
-import os
 import numpy as np
-from typing import Union, List, Optional, Dict, Any, Tuple
-
 import warnings
+from sklearn.preprocessing import LabelEncoder
 
 def check_cuda_availability():
     """
@@ -113,167 +114,52 @@ def get_gpu_memory_info():
             'percent_used': 0
         }
 
-
-def check_cuda_availability() -> bool:
+def encode_categorical(X, categorical_features=None):
     """
-    Check if CUDA is available for GPU acceleration.
-    
-    Returns
-    -------
-    bool
-        True if CUDA is available, False otherwise.
-    """
-    try:
-        import cupy
-        return cupy.cuda.is_available()
-    except ImportError:
-        return False
-    except Exception:
-        return False
-
-
-def encode_categorical(X, feature_types=None):
-    """
-    Encode categorical variables as integers.
+    Encode categorical features with LabelEncoder.
     
     Parameters
     ----------
-    X : array-like
-        Input data matrix.
-    feature_types : list of str, optional
-        List of feature types ('numeric' or 'categorical').
-        If None, infers from data.
+    X : array-like or pandas DataFrame
+        The input data
+    categorical_features : list or None
+        List of categorical feature indices or names. If None,
+        automatically detect object and category dtypes.
         
     Returns
     -------
-    X_encoded : array
-        Encoded input matrix.
+    X_transformed : array or DataFrame
+        Transformed data with encoded categorical features
     encoders : dict
-        Dictionary mapping feature indices to their encoders.
-    feature_types : list
-        List of feature types used.
+        Dictionary of LabelEncoders for each categorical feature
     """
     import pandas as pd
     
-    # Convert to pandas DataFrame for easier handling
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
+    # Convert to DataFrame if not already
+    X_df = X.copy() if isinstance(X, pd.DataFrame) else pd.DataFrame(X)
     
-    n_features = X.shape[1]
+    # Auto-detect categorical features if not specified
+    if categorical_features is None:
+        categorical_features = []
+        for col in X_df.columns:
+            if X_df[col].dtype == 'object' or X_df[col].dtype.name == 'category':
+                categorical_features.append(col)
     
-    # Infer feature types if not provided
-    if feature_types is None:
-        feature_types = []
-        for col in X.columns:
-            if pd.api.types.is_categorical_dtype(X[col]) or pd.api.types.is_object_dtype(X[col]):
-                feature_types.append('categorical')
-            else:
-                feature_types.append('numeric')
+    # Ensure categorical_features has column names
+    if len(categorical_features) > 0 and isinstance(categorical_features[0], int):
+        categorical_features = [X_df.columns[i] for i in categorical_features]
     
-    # Initialize encoders dictionary
+    # Create and fit encoders
     encoders = {}
-    X_encoded = X.copy()
+    for col in categorical_features:
+        le = LabelEncoder()
+        X_df[col] = le.fit_transform(X_df[col])
+        encoders[col] = le
     
-    # Encode categorical features
-    for i, (col, feat_type) in enumerate(zip(X.columns, feature_types)):
-        if feat_type == 'categorical':
-            # Create a mapping dictionary
-            unique_vals = sorted(X[col].unique())
-            encoder = {val: idx for idx, val in enumerate(unique_vals)}
-            encoders[i] = encoder
-            
-            # Apply encoding
-            X_encoded[col] = X[col].map(encoder)
-    
-    return X_encoded.values, encoders, feature_types
+    # Return DataFrame or numpy array depending on input type
+    if isinstance(X, pd.DataFrame):
+        return X_df, encoders
+    else:
+        return X_df.values, encoders
 
-
-def parse_formula(formula: str) -> Tuple[str, List[str]]:
-    """
-    Parse an R-style formula into outcome and predictor variables.
-    
-    Parameters
-    ----------
-    formula : str
-        R-style formula (e.g., "y ~ x1 + x2").
-        
-    Returns
-    -------
-    tuple
-        (outcome_var, predictor_vars)
-    """
-    import re
-    
-    # Strip whitespace and check format
-    formula = formula.strip()
-    match = re.match(r"(.+?)\s*~\s*(.+)$", formula)
-    if not match:
-        raise ValueError(f"Invalid formula format: {formula}")
-    
-    outcome = match.group(1).strip()
-    predictors_str = match.group(2).strip()
-    
-    # Handle special case '.' for all other variables
-    if predictors_str == '.':
-        return outcome, ['.']
-    
-    # Parse predictors
-    predictors = [p.strip() for p in re.split(r'\s*\+\s*', predictors_str)]
-    
-    return outcome, predictors
-
-
-def check_environment():
-    """
-    Check and report the computing environment.
-    
-    Returns
-    -------
-    dict
-        Dictionary with environment information.
-    """
-    env_info = {
-        'gpu_available': check_cuda_availability(),
-        'python_version': None,
-        'numpy_version': None,
-        'pandas_version': None,
-        'sklearn_version': None,
-        'cuda_version': None,
-        'cupy_version': None
-    }
-    
-    import sys
-    env_info['python_version'] = sys.version
-    
-    try:
-        import numpy
-        env_info['numpy_version'] = numpy.__version__
-    except ImportError:
-        pass
-    
-    try:
-        import pandas
-        env_info['pandas_version'] = pandas.__version__
-    except ImportError:
-        pass
-    
-    try:
-        import sklearn
-        env_info['sklearn_version'] = sklearn.__version__
-    except ImportError:
-        pass
-    
-    if env_info['gpu_available']:
-        try:
-            import cupy
-            env_info['cupy_version'] = cupy.__version__
-            
-            # Get CUDA version
-            cuda_version = cupy.cuda.runtime.runtimeGetVersion()
-            major = cuda_version // 1000
-            minor = (cuda_version % 1000) // 10
-            env_info['cuda_version'] = f"{major}.{minor}"
-        except Exception:
-            pass
-    
-    return env_info
+# Any additional utility functions go here
