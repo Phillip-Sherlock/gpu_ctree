@@ -26,6 +26,13 @@ try:
     major = cuda_version // 1000
     minor = (cuda_version % 1000) // 10
     print(f"- CUDA Version: {major}.{minor}")
+    
+    # Test importing the GPU functions from kernels.py
+    try:
+        from gpu_ctree.kernels import gpu_permutation_test, gpu_compute_split_criterion, gpu_compute_node_statistics
+        print("- GPU functions successfully imported")
+    except ImportError as e:
+        print(f"- GPU functions import error: {str(e)}")
 except ImportError:
     print("- CuPy not available")
 
@@ -54,7 +61,7 @@ print(f"Testing data: {X_test.shape}")
 # Configure the model with look-ahead
 controls = gpu_ctree_control(
     alpha=0.05,           # Significance level
-    lookahead=10,         # Look-ahead depth of 10
+    lookahead=2,          # Look-ahead depth of 2
     minsplit=20,          # Minimum split size
     minbucket=7,          # Minimum bucket size
     maxdepth=10           # Maximum tree depth
