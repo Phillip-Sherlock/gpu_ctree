@@ -1,0 +1,13 @@
+Training time: 187.40 seconds
+Mean Squared Error: 0.4217
+R² Score: 0.6782
+
+Feature Importance:
+- MedInc: 0.1090
+- HouseAge: 0.0665
+- AveRooms: 0.0298
+- AveBedrms: 0.0111
+- Population: 0.0007
+- AveOccup: 0.2388
+- Latitude: 0.2643
+- Longitude: 0.2799

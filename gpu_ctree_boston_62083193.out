@@ -1,0 +1,97 @@
+Job started at: Fri Mar 21 22:12:47 EDT 2025
+Running on node: c0306a-s17.ufhpc
+Allocated GPUs: 1,2,3,5
+Fri Mar 21 22:13:10 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.127.05             Driver Version: 550.127.05     CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:1A:00.0 Off |                  N/A |
+| 29%   24C    P8             15W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:1B:00.0 Off |                  N/A |
+| 30%   32C    P8             21W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:60:00.0 Off |                  N/A |
+| 30%   25C    P8             16W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:61:00.0 Off |                  N/A |
+| 30%   31C    P8             22W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   4  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:B1:00.0 Off |                  N/A |
+| 29%   25C    P8              7W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   5  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:B2:00.0 Off |                  N/A |
+| 30%   25C    P8             13W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   6  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:DA:00.0 Off |                  N/A |
+| 29%   22C    P8             17W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   7  NVIDIA GeForce RTX 2080 Ti     On  |   00000000:DB:00.0 Off |                  N/A |
+| 29%   23C    P8             28W /  250W |       1MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+Checking for CUDA with Python:
+CUDA available: True
+CuPy version: 10.6.0
+Requirement already satisfied: cupy-cuda11x in ./gpu_ctree_env/lib/python3.10/site-packages (13.4.1)
+Requirement already satisfied: fastrlock>=0.5 in ./gpu_ctree_env/lib/python3.10/site-packages (from cupy-cuda11x) (0.8.3)
+Requirement already satisfied: numpy<2.3,>=1.22 in ./gpu_ctree_env/lib/python3.10/site-packages (from cupy-cuda11x) (1.24.4)
+Requirement already satisfied: numba in ./gpu_ctree_env/lib/python3.10/site-packages (0.61.0)
+Requirement already satisfied: llvmlite<0.45,>=0.44.0dev0 in ./gpu_ctree_env/lib/python3.10/site-packages (from numba) (0.44.0)
+Requirement already satisfied: numpy<2.2,>=1.24 in ./gpu_ctree_env/lib/python3.10/site-packages (from numba) (1.24.4)
+Environment Information:
+- GPU Available: True
+- CuPy Version: 13.4.1
+- CUDA Version: 11.8
+- Python Version: 3.10.12
+- NumPy Version: 1.24.4
+- Using 0,1,2,3 GPUs
+
+Loading California Housing dataset...
+Dataset shape: (20640, 8)
+Features: MedInc, HouseAge, AveRooms, AveBedrms, Population, AveOccup, Latitude, Longitude
+Training data: (16512, 8)
+Testing data: (4128, 8)
+
+Training model with look-ahead...
+Training completed in 187.40 seconds
+
+Evaluating model...
+Mean Squared Error: 0.4217
+R² Score: 0.6782
+
+Feature Importance:
+- MedInc: 0.1090
+- HouseAge: 0.0665
+- AveRooms: 0.0298
+- AveBedrms: 0.0111
+- Population: 0.0007
+- AveOccup: 0.2388
+- Latitude: 0.2643
+- Longitude: 0.2799
+
+Model saved to boston_housing_model.pkl
+Could not generate visualizations: cannot import name 'plot_tree' from 'gpu_ctree.visualization' (/blue/hknopf/Phillip.sherlock/gpu_ctree/gpu_ctree/visualization.py)
+
+Example completed successfully!
+Job completed at: Fri Mar 21 22:16:29 EDT 2025

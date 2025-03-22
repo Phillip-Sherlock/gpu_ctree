@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: gpu_ctree
+Version: 0.1.0
+Summary: GPU-Accelerated Conditional Inference Trees with Look-Ahead
+Author: Phillip Sherlock
+Requires-Python: >=3.7
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Provides-Extra: gpu
+Requires-Dist: cupy-cuda116; extra == "gpu"
+Requires-Dist: numba; extra == "gpu"
+Provides-Extra: viz
+Requires-Dist: matplotlib; extra == "viz"
+Requires-Dist: graphviz; extra == "viz"
+Dynamic: author
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

@@ -1,0 +1,5 @@
+gpu_ctree_env/
+*.so
+*.pyc
+__pycache__/
+.ipynb_checkpoints/

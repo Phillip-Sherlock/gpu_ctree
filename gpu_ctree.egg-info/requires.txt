@@ -1,0 +1,12 @@
+numpy
+scipy
+pandas
+scikit-learn
+
+[gpu]
+cupy-cuda116
+numba
+
+[viz]
+matplotlib
+graphviz

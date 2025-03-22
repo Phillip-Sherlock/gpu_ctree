@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpu_ctree"
+version = "0.1.0"
+description = "GPU-Accelerated Conditional Inference Trees with Look-Ahead"
+readme = "README.md"
+authors = [
+    {name = "Phillip Sherlock", email = "phillip.sherlock@ufl.edu"},
+]
+license = {text = "Apache 2.0"}
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "numpy>=1.19.0",
+    "scipy>=1.6.0",
+    "pandas>=1.2.0",
+    "scikit-learn>=0.24.0",
+    "joblib>=1.0.0",
+    "formulaic>=0.3.0",  # For formula parsing
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cupy-cuda11x>=10.0.0",
+    "numba>=0.53.0",
+]
+viz = [
+    "matplotlib>=3.3.0",
+    "graphviz>=0.16",
+]
+dev = [
+    "pytest>=6.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "flake8>=4.0.0",
+]
+
+[tool.setuptools]
+packages = ["gpu_ctree", "gpu_ctree.cuda"]
