@@ -6,6 +6,113 @@ import os
 import numpy as np
 from typing import Union, List, Optional, Dict, Any, Tuple
 
+import warnings
+
+def check_cuda_availability():
+    """
+    Check if CUDA is available for GPU acceleration.
+    
+    Returns
+    -------
+    bool
+        True if CUDA is available, False otherwise
+    """
+    try:
+        import cupy as cp
+        return cp.cuda.is_available()
+    except ImportError:
+        return False
+
+def to_gpu(array):
+    """
+    Transfer a NumPy array to GPU memory.
+    
+    Parameters
+    ----------
+    array : array-like
+        NumPy array to transfer to GPU
+        
+    Returns
+    -------
+    array
+        CuPy array in GPU memory
+    """
+    try:
+        import cupy as cp
+        return cp.asarray(array)
+    except ImportError:
+        warnings.warn("CuPy not available. Cannot transfer to GPU.")
+        return array
+
+def to_cpu(array):
+    """
+    Transfer a CuPy array to CPU memory.
+    
+    Parameters
+    ----------
+    array : array-like
+        CuPy array to transfer to CPU
+        
+    Returns
+    -------
+    array
+        NumPy array in CPU memory
+    """
+    try:
+        import cupy as cp
+        if isinstance(array, cp.ndarray):
+            return cp.asnumpy(array)
+        return array
+    except ImportError:
+        return array
+
+def clear_gpu_memory():
+    """
+    Clear GPU memory to prevent memory leaks.
+    """
+    try:
+        import cupy as cp
+        cp.get_default_memory_pool().free_all_blocks()
+        cp.get_default_pinned_memory_pool().free_all_blocks()
+    except ImportError:
+        warnings.warn("CuPy not available. Cannot clear GPU memory.")
+
+def get_gpu_memory_info():
+    """
+    Get GPU memory information.
+    
+    Returns
+    -------
+    dict
+        Dictionary with GPU memory information:
+        - free: free memory in bytes
+        - total: total memory in bytes
+        - used: used memory in bytes
+        - percent_used: percentage of memory used
+    """
+    try:
+        import cupy as cp
+        mem_info = cp.cuda.runtime.memGetInfo()
+        free = mem_info[0]
+        total = mem_info[1]
+        used = total - free
+        percent_used = (used / total) * 100
+        
+        return {
+            'free': free,
+            'total': total,
+            'used': used,
+            'percent_used': percent_used
+        }
+    except ImportError:
+        warnings.warn("CuPy not available. Cannot get GPU memory information.")
+        return {
+            'free': 0,
+            'total': 0,
+            'used': 0,
+            'percent_used': 0
+        }
+
 
 def check_cuda_availability() -> bool:
     """

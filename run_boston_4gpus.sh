@@ -29,9 +29,31 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 source /blue/hknopf/Phillip.sherlock/gpu_ctree/gpu_ctree_env/bin/activate
 
 # Check if GPU is available through Python
-python -c "import cupy as cp; print(f'CuPy version: {cp.__version__}'); print(f'GPU devices: {cp.cuda.runtime.getDeviceCount()}'); print(f'Current device: {cp.cuda.runtime.getDevice()}')" || echo "Could not initialize CuPy"
+echo "Testing GPU availability with CuPy:"
+python -c "
+try:
+    import cupy as cp
+    print(f'CuPy version: {cp.__version__}')
+    print(f'GPU devices: {cp.cuda.runtime.getDeviceCount()}')
+    print(f'Current device: {cp.cuda.runtime.getDevice()}')
+except ImportError as e:
+    print(f'Could not import CuPy: {e}')
+except Exception as e:
+    print(f'CuPy error: {e}')
+"
+
+# Check if GPU kernel functions are available
+echo "Testing GPU kernel functions availability:"
+python -c "
+try:
+    from gpu_ctree.kernels import gpu_permutation_test, gpu_compute_split_criterion, gpu_compute_node_statistics
+    print('GPU kernel functions are available')
+except ImportError as e:
+    print(f'Could not import GPU kernel functions: {e}')
+"
 
 # Run the Boston Housing example
+echo "Running the Boston Housing example..."
 python boston_housing_example.py
 
 echo "Job completed at: $(date)"
