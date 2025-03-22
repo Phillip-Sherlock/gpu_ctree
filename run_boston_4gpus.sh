@@ -28,6 +28,9 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # Activate the environment
 source /blue/hknopf/Phillip.sherlock/gpu_ctree/gpu_ctree_env/bin/activate
 
+# Set the PYTHONPATH to include the project root
+export PYTHONPATH="/blue/hknopf/Phillip.sherlock/gpu_ctree:$PYTHONPATH"
+
 # Check if GPU is available through Python
 echo "Testing GPU availability with CuPy:"
 python -c "
@@ -42,14 +45,26 @@ except Exception as e:
     print(f'CuPy error: {e}')
 "
 
-# Check if GPU kernel functions are available
-echo "Testing GPU kernel functions availability:"
+# Test imports directly
+echo "Testing imports:"
 python -c "
 try:
-    from gpu_ctree.kernels import gpu_permutation_test, gpu_compute_split_criterion, gpu_compute_node_statistics
-    print('GPU kernel functions are available')
+    from gpu_ctree.utils import check_cuda_availability
+    print('✓ Successfully imported check_cuda_availability')
+    
+    from gpu_ctree import gpu_ctree_control
+    print('✓ Successfully imported gpu_ctree_control')
+    
+    from gpu_ctree import GPUCTree
+    print('✓ Successfully imported GPUCTree')
+    
+    # Now test the top-level import
+    import gpu_ctree
+    print(f'✓ Imported gpu_ctree package: {gpu_ctree.__version__}')
 except ImportError as e:
-    print(f'Could not import GPU kernel functions: {e}')
+    print(f'✗ Import error: {e}')
+except Exception as e:
+    print(f'✗ Other error: {e}')
 "
 
 # Run the Boston Housing example

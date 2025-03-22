@@ -162,4 +162,4 @@ def encode_categorical(X, categorical_features=None):
     else:
         return X_df.values, encoders
 
-# Any additional utility functions go here
+# Any other utility functions already in this file should be kept

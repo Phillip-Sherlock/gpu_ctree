@@ -10,10 +10,8 @@ import time
 import os
 import sys
 
-# Import utility functions first
+# Import gpu_ctree
 from gpu_ctree.utils import check_cuda_availability
-
-# Then import the model
 from gpu_ctree import GPUCTree, gpu_ctree_control
 
 # Print environment information

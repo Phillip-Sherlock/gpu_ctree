@@ -38,17 +38,5 @@ if CUPY_AVAILABLE:
             import warnings
             warnings.warn("GPU acceleration unavailable. Falling back to CPU.")
             return None
-    
-    __all__ = [
-        'gpu_permutation_test',
-        'gpu_compute_split_criterion',
-        'gpu_compute_node_statistics',
-        'CUPY_AVAILABLE'
-    ]
-else:
-    import warnings
-    warnings.warn("CuPy not available. GPU acceleration will be disabled.")
-    __all__ = ['CUPY_AVAILABLE']
-    
+
 # DO NOT import other package modules here to avoid circular imports
-# Core components are imported at the package level in /__init__.py
